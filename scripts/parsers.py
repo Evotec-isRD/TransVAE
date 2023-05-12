@@ -109,6 +109,20 @@ def attn_parser():
 
     return parser
 
+def latent_vector_parser():
+    parser = argparse.ArgumentParser()
+    ### Load Files
+    parser.add_argument('--model_type', choices=['transvae', 'rnnattn'],
+                        required=True, type=str)
+    parser.add_argument('--model_ckpt', required=True, type=str)
+    parser.add_argument('-i', '--mols', required=True, type=str)
+    ### Sampling Parameters
+    parser.add_argument('--batch_size', default=100, type=int)
+    ### Save Parameters
+    parser.add_argument('-o', '--output', required=True, type=str)
+
+    return parser
+
 def vocab_parser():
     parser = argparse.ArgumentParser()
     ### Vocab Parameters
