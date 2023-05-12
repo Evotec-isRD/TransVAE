@@ -35,7 +35,7 @@ def calc_latent_vector(args):
     if args.model_type == 'transvae':
         with torch.no_grad():
             with open(args.output, 'w') as output:
-                output.write('smiles'+','.join([f'transvae_{i}' for i in range(128)])+'\n')
+                output.write('smiles,'+','.join([f'transvae_{i}' for i in range(128)])+'\n')
                 for i, batch_data in enumerate(data_iter):
                     print(f'Iter {i}')
                     smiless = all_smiles[i*args.batch_size:(i+1)*args.batch_size]
