@@ -17,7 +17,7 @@ def calc_latent_vector(args):
         vae = TransVAE(load_fn=ckpt_fn)
     elif args.model_type == 'rnnattn':
         vae = RNNAttn(load_fn=ckpt_fn)
-
+    
     all_smiles = pd.read_csv(args.mols).to_numpy()
     
     ### Load data and prepare for iteration
@@ -37,7 +37,6 @@ def calc_latent_vector(args):
             with open(args.output, 'w') as output:
                 output.write('smiles,'+','.join([f'transvae_{i}' for i in range(128)])+'\n')
                 for i, batch_data in enumerate(data_iter):
-                    print(f'Iter {i}')
                     smiless = all_smiles[i*args.batch_size:(i+1)*args.batch_size]
                     mols_data = batch_data[:, :-1]
                     props_data = batch_data[:,-1]
@@ -48,7 +47,6 @@ def calc_latent_vector(args):
                     src = Variable(mols_data).long()
                     src_mask = (src != vae.pad_idx).unsqueeze(-2)
                     latent_mem = vae.model.encoder.get_latent_vector(vae.model.src_embed(src), src_mask)
-                    print(f"Latent mem shape: {latent_mem.shape}")
                     for smiles, row_values in zip(smiless, latent_mem):
                         output.write(f'{smiles[0]},')
                         output.write(",".join(str(v) for v in row_values.tolist()))
