@@ -774,21 +774,20 @@ class VAEEncoder(nn.Module):
         eps = torch.randn_like(std) * eps_scale
         return mu + eps*std
 
+    def non_random_reparameterize(self, mu, logvar):
+        std = torch.exp(0.5*logvar)
+        return mu + std
+    
     # Require reviews
     def get_latent_vector(self, x, mask):
         for i, attn_layer in enumerate(self.layers):
             x = attn_layer(x, mask)
         mem = self.norm(x)
-        print(f'after norm: {mem.shape}')
         mem = mem.permute(0, 2, 1)
-        print(f'after permute {mem.shape}')
         mem = self.conv_bottleneck(mem)
-        print(f'after conv_bottleneck {mem.shape}')
-        mem = mem.contiguous().view(mem.size(0), -1)
-        print(f'after contiguous view {mem.shape}')
-        mu, logvar = self.z_means(mem), self.z_var(mem)     # check
-        std = torch.exp(0.5 * logvar)                       # check
-        mem = mu + std * std                                # check
+        mem = mem.contiguous().view(mem.size(0), -1)    
+        mu, logvar = self.z_means(mem), self.z_var(mem)
+        mem = self.non_random_reparameterize(mu, logvar)
         return mem
     
     def forward(self, x, mask):
