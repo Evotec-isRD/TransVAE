@@ -112,7 +112,7 @@ def attn_parser():
 def latent_vector_parser():
     parser = argparse.ArgumentParser()
     ### Load Files
-    parser.add_argument('--model_type', choices=['transvae', 'rnnattn'],
+    parser.add_argument('--model', choices=['transvae', 'rnnattn'],
                         required=True, type=str)
     parser.add_argument('--model_ckpt', required=True, type=str)
     parser.add_argument('-i', '--mols', required=True, type=str)
