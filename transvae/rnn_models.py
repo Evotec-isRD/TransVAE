@@ -235,6 +235,28 @@ class RNNAttnEncoder(nn.Module):
         eps = torch.randn_like(std)
         return mu + eps*std
 
+    def non_random_reparameterize(self, mu, logvar):
+        std = torch.exp(0.5*logvar)
+        return mu + std
+    
+    def get_latent_vector(self, x):
+        h = self.initH(x.shape[0])
+        x = x.permute(1, 0, 2)
+        x_out, h = self.gru(x, h)
+        x = x.permute(1, 0, 2)
+        x_out = x_out.permute(1, 0, 2)
+        mem = self.norm(x_out)
+        attn_weights = F.softmax(self.attn(torch.cat((x, mem), 2)), dim=2)
+        attn_applied = torch.bmm(attn_weights, mem)
+        mem = F.relu(attn_applied)
+        mem = mem.permute(0, 2, 1)
+        mem = self.conv_bottleneck(mem)
+        mem = mem.contiguous().view(mem.size(0), -1)
+        mu, logvar = self.z_means(mem), self.z_var(mem)
+        mem = self.non_random_reparameterize(mu, logvar)
+        print("~mem shape::", mem.shape)
+        return mem
+    
     def forward(self, x, return_attn=False):
         h = self.initH(x.shape[0])
         x = x.permute(1, 0, 2)

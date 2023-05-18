@@ -79,10 +79,22 @@ def calc_latent_vector(args):
                 
     elif args.model_type == 'rnnattn':
         with torch.no_grad():
-            with open(args.output, 'w') as output:
-                output.write('smiles,'+','.join([f'rnnattn_{i}' for i in range(128)])+'\n')
-                for i, batch_data in enumerate(data_iter):
-                    smiless = all_smiles[i*args.batch_size:(i+1)*args.batch_size]
+            dfs = []
+            for i, batch_data in enumerate(data_iter):
+                smiless = valid_smiless[i*args.batch_size:(i+1)*args.batch_size]
+                mols_data = batch_data[:, :-1]
+                props_data = batch_data[:,-1]
+                if vae.use_gpu:
+                    mols_data = mols_data.cuda()
+                    props_data = props_data.cuda()
+                    
+                src = Variable(mols_data).long()
+                latent_mem = vae.model.encoder.get_latent_vector(vae.model.src_embed(src))
+                dfs.append(pd.concat([pd.DataFrame(data={args.smiles_col_name: [s[0] for s in smiless]}), 
+                                        pd.DataFrame(latent_mem.numpy(), columns=[f'{args.model_type}_{i}' for i in range(1, latent_mem.shape[1]+1)])],
+                                        axis=1
+                                        )
+                )               
                     
     combined_df = pd.concat(dfs, ignore_index=True)
     merged = all_smiles[[args.smiles_col_name]].merge(combined_df, how='left', on=args.smiles_col_name)
