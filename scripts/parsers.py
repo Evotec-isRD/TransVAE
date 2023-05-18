@@ -116,6 +116,8 @@ def latent_vector_parser():
                         required=True, type=str)
     parser.add_argument('--model_ckpt', required=True, type=str)
     parser.add_argument('-i', '--mols', required=True, type=str)
+    parser.add_argument('--smiles_col_name', default='smiles', type=str)
+    parser.add_argument('--delimiter', default=',', type=str)
     parser.add_argument('--batch_size', default=100, type=int)
     ### Save Parameters
     parser.add_argument('-o', '--output', required=True, type=str)
