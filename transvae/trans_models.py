@@ -778,14 +778,13 @@ class VAEEncoder(nn.Module):
         std = torch.exp(0.5*logvar)
         return mu + std
     
-    # Require reviews
     def get_latent_vector(self, x, mask):
         for i, attn_layer in enumerate(self.layers):
             x = attn_layer(x, mask)
         mem = self.norm(x)
         mem = mem.permute(0, 2, 1)
         mem = self.conv_bottleneck(mem)
-        mem = mem.contiguous().view(mem.size(0), -1)    
+        mem = mem.contiguous().view(mem.size(0), -1)
         mu, logvar = self.z_means(mem), self.z_var(mem)
         mem = self.non_random_reparameterize(mu, logvar)
         return mem
